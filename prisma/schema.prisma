@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  name         String
+  lastname     String
+  email        String         @unique
+  password     String
+  state        Boolean        @default(true)
+  Folder       Folder[]
+  UserFolder   UserFolder[]
+  Class        Class[]
+  UserClass    UserClass[]
+  Conversation Conversation[]
+  roleId       Int
+  role         Role           @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+
+model Class {
+  id           Int            @id @default(autoincrement())
+  name         String
+  url_pdf      String         @default("")
+  url_audio    String         @default("")
+  resume       String         @default("")
+  userId       Int
+  folderId     Int?
+  duration     String         @default("")
+  user         User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder       Folder?        @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  updatedAt    DateTime       @default(now())
+  createdAt    DateTime       @default(now())
+  contacts     UserClass[]
+  Conversation Conversation[]
+}
+
+model Folder {
+  id        Int          @id @default(autoincrement())
+  name      String
+  userId    Int
+  folderId  Int?
+  User      User?        @relation(fields: [userId], references: [id])
+  updatedAt DateTime     @default(now())
+  createdAt DateTime     @default(now())
+  contacts  UserFolder[]
+  Class     Class[]
+}
+
+model UserFolder {
+  id       Int     @id @default(autoincrement())
+  userId   Int
+  folderId Int
+  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
+model UserClass {
+  id      Int    @id @default(autoincrement())
+  userId  Int
+  classId Int
+  user    User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class   Class? @relation(fields: [classId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  question  String   @db.Text
+  answer    String   @db.Text
+  classId   Int
+  userId    Int
+  updatedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  class     Class?   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id             Int              @id @default(autoincrement())
+  name           String
+  RolePermission RolePermission[]
+  User           User[]
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  idRole       Int
+  idPermission Int
+  role         Role       @relation(fields: [idRole], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [idPermission], references: [id], onDelete: Cascade)
+}
+
+model Permission {
+  id             Int              @id @default(autoincrement())
+  name           String
+  code           String           @unique
+  icon           String
+  RolePermission RolePermission[]
+}
+
+model Contact {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  contactId Int
+}
