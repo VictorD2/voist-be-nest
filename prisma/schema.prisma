@@ -24,6 +24,7 @@ model User {
   Conversation Conversation[]
   roleId       Int
   role         Role           @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  LoggedTime   LoggedTime[]
 }
 
 model Class {
@@ -110,4 +111,12 @@ model Contact {
   id        Int @id @default(autoincrement())
   userId    Int
   contactId Int
+}
+
+model LoggedTime {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @db.Date
+  minutes   Decimal  @db.Decimal(10, 2)
+  userId    Int
+  user      User?    @relation(fields: [userId], references: [id])
 }
