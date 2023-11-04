@@ -14,6 +14,7 @@ import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { PrismaService } from 'src/prisma.service';
 import { GetFolderDto } from 'src/folders/dto/get-folder.dto';
+import { sqltag } from '@prisma/client/runtime/library';
 
 const REGION = process.env.AWS_REGION;
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
@@ -133,6 +134,32 @@ export class ClassesService {
       where: { id: +id, userId: +userId },
     });
     return id;
+  }
+
+  async getCountPerMonth() {
+    const currentYear = new Date().getFullYear(); // Obtenemos el año actual
+    const query = sqltag`
+      SELECT 
+        DATE_TRUNC('month', "createdAt") AS month,
+        COUNT(*) AS class_count
+      FROM "Class"
+      WHERE EXTRACT(YEAR FROM "createdAt") = ${currentYear}
+      GROUP BY month
+      ORDER BY month;
+    `;
+
+    const result: { month: Date; class_count: number }[] =
+      await this.prisma.$queryRaw(query);
+    return result.map((item) => {
+      return {
+        month: item.month,
+        count: Number(item.class_count),
+      };
+    });
+  }
+
+  async getCount() {
+    return await this.prisma.class.count();
   }
 
   async saveAudio(buffer: any, fileId: number) {

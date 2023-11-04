@@ -65,6 +65,20 @@ export class ClassesController {
     return classes;
   }
 
+  @Get('/countPerMonth')
+  @HttpCode(HttpStatus.OK)
+  async getCountBetween() {
+    const classes = await this.classesService.getCountPerMonth();
+    return classes;
+  }
+
+  @Get('/count')
+  @HttpCode(HttpStatus.OK)
+  async getCount() {
+    const classes = await this.classesService.getCount();
+    return classes;
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param() param: GetClassByIdDto, @Request() req) {

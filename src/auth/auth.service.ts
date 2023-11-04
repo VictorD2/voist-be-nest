@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { BcriptService } from 'src/bcript/bcript.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
+import md5 from 'md5';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,7 @@ export class AuthService {
         email: true,
         name: true,
         roleId: true,
+        photo: true,
         state: true,
         password: true,
         lastname: true,
@@ -105,16 +107,23 @@ export class AuthService {
    */
   async signup(dtoRegister: RegisterDto) {
     // Query
+
     const encryptPassword = await this.bcript.encrypt(dtoRegister.password);
     try {
       const user = await this.prisma.user.create({
-        data: { ...dtoRegister, password: encryptPassword, roleId: 1 },
+        data: {
+          ...dtoRegister,
+          password: encryptPassword,
+          roleId: 1,
+          photo: `https://www.gravatar.com/avatar/${md5(dtoRegister.email)}`,
+        },
         select: {
           id: true,
           email: true,
           name: true,
           roleId: true,
           state: true,
+          photo: true,
           password: true,
           lastname: true,
           role: {
